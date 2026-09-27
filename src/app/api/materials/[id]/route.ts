@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { APIError, handleError } from '@/lib/errors';
+import { requireUserId } from '@/lib/auth';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const userId = req.headers.get('x-user-id');
-    if (!userId) {
-      throw new APIError(401, 'Unauthorized: User ID required', 'AUTH_MISSING');
-    }
+    const userId = requireUserId(req);
 
     const material = await prisma.studyMaterial.findUnique({
       where: { id: params.id },
@@ -39,13 +37,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       throw new APIError(403, 'Forbidden: Cannot access this material', 'UNAUTHORIZED');
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        material,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, material }, { status: 200 });
   } catch (error) {
     const { statusCode, message, code } = handleError(error);
     return NextResponse.json({ success: false, error: message, code }, { status: statusCode });
@@ -54,10 +46,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const userId = req.headers.get('x-user-id');
-    if (!userId) {
-      throw new APIError(401, 'Unauthorized: User ID required', 'AUTH_MISSING');
-    }
+    const userId = requireUserId(req);
 
     const material = await prisma.studyMaterial.findUnique({
       where: { id: params.id },
@@ -71,24 +60,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       throw new APIError(403, 'Forbidden: Cannot delete this material', 'UNAUTHORIZED');
     }
 
-    // Delete from S3 if stored there
-    if (material.storageKey && process.env.AWS_S3_BUCKET) {
-      // TODO: Implement S3 deletion
-      // await deleteFileFromS3(material.storageKey);
-    }
-
-    // Cascading delete handled by database
     await prisma.studyMaterial.delete({
       where: { id: params.id },
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Material deleted successfully',
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, message: 'Material deleted successfully' }, { status: 200 });
   } catch (error) {
     const { statusCode, message, code } = handleError(error);
     return NextResponse.json({ success: false, error: message, code }, { status: statusCode });
