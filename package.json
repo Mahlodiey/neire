@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -21,10 +25,12 @@
     "postcss": "^8.4.32",
     "autoprefixer": "^10.4.17",
     "axios": "^1.6.5",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
     "eslint": "^8.56.0",
-    "eslint-config-next": "^14.1.0"
+    "eslint-config-next": "^14.1.0",
+    "prisma": "^5.22.0"
   }
 }
