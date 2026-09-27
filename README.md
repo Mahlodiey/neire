@@ -29,24 +29,26 @@ Students upload study materials (PDFs, notes, textbooks, etc.), and NEIRE:
 - **Next.js 14** - React framework with App Router
 - **TypeScript** - Type-safe development
 - **Tailwind CSS** - Utility-first styling
-- **React** - Component library
+- **React Hooks** - State management
+- **Axios** - HTTP client
 
 ### Backend
 - **Next.js API Routes** - Serverless backend
 - **Node.js** - Runtime
+- **Prisma ORM** - Database ORM with migrations
 
 ### Database
-- **PostgreSQL** - Primary database (to be configured)
-- **Redis** - Caching layer (optional, for later phases)
+- **PostgreSQL 16** - Primary database
+- **Docker** - Local development (optional)
 
-### AI & LLM
-- **OpenAI API** - Language model for explanations and content generation
-- **Embedding API** - Semantic search and vector storage
+### Authentication
+- **JWT (JSON Web Tokens)** - Session management
+- **bcrypt** - Password hashing
 
-### Infrastructure
+### Infrastructure (Future)
 - **Vercel** - Frontend deployment
-- **AWS S3 / Similar** - Document storage
-- **Managed PostgreSQL** - Database hosting
+- **AWS S3** - Document storage
+- **AWS RDS** - Managed PostgreSQL
 
 ## 🏗️ Project Structure
 
@@ -61,14 +63,33 @@ neire/
 │   │   │   ├── signup/
 │   │   │   └── login/
 │   │   ├── dashboard/          # Main dashboard
-│   │   ├── learn/              # Learning interface
-│   │   ├── api/                # API routes (to be created)
-│   │   └── admin/              # Admin panel (future)
-│   ├── components/             # Reusable components (to be created)
-│   ├── lib/                    # Utilities and helpers (to be created)
-│   ├── types/                  # TypeScript types (to be created)
-│   └── services/               # External service integrations (to be created)
+│   │   ├── api/                # API routes
+│   │   │   ├── auth/
+│   │   │   ├── materials/
+│   │   │   └── users/
+│   │   └── learn/              # Learning interface (future)
+│   ├── components/             # Reusable React components
+│   │   ├── UploadForm.tsx
+│   │   └── MaterialList.tsx
+│   ├── hooks/                  # Custom React hooks
+│   │   ├── useAuth.ts
+│   │   ├── useMaterials.ts
+│   │   └── useUploadMaterial.ts
+│   ├── lib/                    # Utilities and helpers
+│   │   ├── prisma.ts
+│   │   ├── auth.ts
+│   │   ├── errors.ts
+│   │   ├── file-utils.ts
+│   │   └── s3.ts
+│   └── types/                  # TypeScript types
+├── prisma/
+│   ├── schema.prisma           # Database schema
+│   └── migrations/             # Database migrations
+├── docs/                       # Documentation
+│   ├── database.md
+│   └── postgresql-setup.md
 ├── public/                     # Static assets
+├── docker-compose.yml          # Docker configuration
 ├── package.json                # Dependencies
 ├── tsconfig.json               # TypeScript config
 ├── next.config.js              # Next.js config
@@ -76,12 +97,13 @@ neire/
 └── README.md                   # This file
 ```
 
-## 🚦 Getting Started
+## 🚦 Quick Start
 
 ### Prerequisites
 - Node.js 18+
 - npm or yarn
-- Git
+- Docker (optional, for PostgreSQL)
+- PostgreSQL 16 (if not using Docker)
 
 ### Installation
 
@@ -96,78 +118,93 @@ neire/
    npm install
    ```
 
-3. **Create environment file**
+3. **Set up PostgreSQL**
+
+   **Option A: Docker (Recommended)**
+   ```bash
+   docker-compose up -d
+   ```
+
+   **Option B: Local Installation**
+   See [PostgreSQL Setup Guide](docs/postgresql-setup.md)
+
+4. **Configure environment**
    ```bash
    cp .env.example .env.local
    ```
-   Fill in your API keys and configuration:
+
+   Update `.env.local`:
    ```
-   NEXT_PUBLIC_API_URL=http://localhost:3000/api
-   OPENAI_API_KEY=your_key_here
-   DATABASE_URL=postgresql://user:password@localhost:5432/neire
+   DATABASE_URL="postgresql://neire_user:neire_password@localhost:5432/neire"
+   JWT_SECRET="your-super-secret-key"
+   NEXT_PUBLIC_API_URL="http://localhost:3000/api"
    ```
 
-4. **Run development server**
+5. **Initialize database**
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev --name init
+   ```
+
+6. **Run development server**
    ```bash
    npm run dev
    ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-5. **Build for production**
-   ```bash
-   npm run build
-   npm start
-   ```
+   Open [http://localhost:3000](http://localhost:3000)
+
+### First Steps
+
+1. Sign up at `/auth/signup`
+2. Upload a study material (PDF, TXT, or Markdown)
+3. View your dashboard and materials
+4. Monitor upload and processing status
 
 ## 📚 Learning Workflow (MVP)
 
-### Phase 1: Core Upload & Structure
-1. User uploads a study material (PDF/text)
-2. System extracts text and identifies key topics
-3. Content is chunked and structured
+### Phase 1: Core Upload & Structure ✅
+- User uploads a study material (PDF/text)
+- System extracts text and chunks content
+- Material is stored in database
 
-### Phase 2: Interactive Learning
-1. Student selects a topic
-2. NEIRE provides an explanation
-3. Student can ask for simplifications or examples
-4. System tracks understanding
+### Phase 2: Interactive Learning (In Progress)
+- Student selects a topic
+- NEIRE provides an explanation
+- Student can ask for simplifications or examples
+- System tracks understanding
 
 ### Phase 3: Practice
-1. Generated questions based on the material
-2. Student answers and receives feedback
-3. System logs performance metrics
+- Generated questions based on the material
+- Student answers and receives feedback
+- System logs performance metrics
 
 ### Phase 4: Adaptive Review
-1. System analyzes performance and confidence
-2. Recommends next action (more explanation, practice, recall, review)
-3. Spaced repetition for weak areas
+- System analyzes performance and confidence
+- Recommends next action (explanation, practice, recall, review)
+- Spaced repetition for weak areas
 
 ## 🔧 Development Roadmap
 
-### Week 1-2: Foundation
-- [ ] Database schema design
-- [ ] Authentication system
-- [ ] File upload and storage
+### ✅ Completed
+- [x] Database schema design
+- [x] Authentication system (JWT + bcrypt)
+- [x] File upload API
+- [x] Upload UI with drag-and-drop
+- [x] Material listing and management
+- [x] PostgreSQL setup guide
 
-### Week 3-4: Content Processing
-- [ ] PDF/text extraction
-- [ ] Content chunking and structuring
-- [ ] Embedding generation
+### 🚧 In Progress
+- [ ] AI-powered topic extraction (OpenAI)
+- [ ] Question generation
+- [ ] Learning path creation
 
-### Week 5-6: Learning Interface
+### 📅 Planned
 - [ ] Tutor chat interface
-- [ ] Question generation and answering
-- [ ] Progress tracking dashboard
-
-### Week 7-8: Adaptive Logic
-- [ ] Performance analysis
-- [ ] Learning path generation
-- [ ] Personalized recommendations
-
-### Week 9-10: Polish & Deploy
-- [ ] UI/UX refinement
-- [ ] Testing and bug fixes
-- [ ] Production deployment
+- [ ] Multi-modal explanations (text, voice, visuals)
+- [ ] Practice question system
+- [ ] Performance tracking dashboard
+- [ ] Spaced repetition scheduler
+- [ ] Mobile app (React Native)
 
 ## 🤝 Contributing
 
@@ -184,7 +221,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📞 Support
 
-For questions or issues, please open a GitHub issue or contact the development team.
+For questions or issues:
+
+1. Check the [PostgreSQL Setup Guide](docs/postgresql-setup.md)
+2. Review the [Database Documentation](docs/database.md)
+3. Open a GitHub issue
 
 ---
 
